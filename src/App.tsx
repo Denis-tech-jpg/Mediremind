@@ -3,26 +3,28 @@ import { Bell, Calendar, Users, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Appointment } from './types';
 import { appointmentService } from './services/api';
+import { NewAppointmentModal } from './components/NewAppointmentModal';
 
 function App() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const fetchAppointments = async () => {
+    try {
+      const data = await appointmentService.getAll();
+      setAppointments(data);
+      setError(null);
+    } catch (err) {
+      setError('Failed to load appointments. Please try again later.');
+      console.error('Error fetching appointments:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchAppointments = async () => {
-      try {
-        const data = await appointmentService.getAll();
-        setAppointments(data);
-        setError(null);
-      } catch (err) {
-        setError('Failed to load appointments. Please try again later.');
-        console.error('Error fetching appointments:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchAppointments();
   }, []);
 
@@ -46,7 +48,10 @@ function App() {
               <Bell className="h-8 w-8 text-blue-600" />
               <h1 className="ml-2 text-2xl font-bold text-gray-900">MediRemind</h1>
             </div>
-            <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
               <Plus className="h-5 w-5 mr-2" />
               New Appointment
             </button>
@@ -168,6 +173,12 @@ function App() {
           </div>
         </div>
       </main>
+
+      <NewAppointmentModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onAppointmentCreated={fetchAppointments}
+      />
     </div>
   );
 }
