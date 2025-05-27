@@ -17,7 +17,7 @@ export const appointmentService = {
   },
 
   create: async (appointment: Omit<Appointment, 'id'>) => {
-    const response = await api.post<Appointment>('/schedule_appointment', appointment);
+    const response = await api.post<Appointment>('/appointments', appointment);
     return response.data;
   },
 
